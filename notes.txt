@@ -1,0 +1,45 @@
+
+----
+
+1. Get Hyperscan
+
+The source code to the Hyperscan library can be downloaded from:
+
+    https://01.org/hyperscan
+
+See the Developer Guide for instructions on how to build the library. This
+patch (v3) has been tested against Hyperscan 4.3.2.
+
+2. Apply the patch to a Snort tree
+
+After downloading and unpacking Snort, the Hyperscan patch can be applied as
+follows:
+
+    $ cd snort-2.9.8.2
+    $ zcat <path>/snort-2982-hyperscan.patch-v3.gz | patch -p2
+
+Since this patch adds some options to configure.in, you will need to regenerate
+the configure script and other autotools files:
+
+    $ autoreconf -fi
+
+Then, to setup a build with Hyperscan, you should configure and build Snort
+with the new configure arguments, as shown below. Note that these assume that
+Hyperscan has been built and installed in /opt/hyperscan-4.3.2/.
+
+    $ ./configure --enable-intel-hyperscan \
+            --with-intel-hyperscan-includes=/opt/hyperscan-4.3.2/include/hs \
+            --with-intel-hyperscan-libraries=/opt/hyperscan-4.3.2/lib \
+            <any other configure arguments>
+    $ make
+
+3. Configure Snort to use the Hyperscan MPSE matcher
+
+The built Snort binary will use Hyperscan by default to scan for single content
+and PCRE options.  To enable the use of the Hyperscan MPSE matcher for bulk
+literal scanning, change the "config detection" option in your snort.conf:
+
+    config detection: search-method hyperscan split-any-any
+
+----
+
